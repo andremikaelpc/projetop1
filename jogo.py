@@ -11,6 +11,10 @@ pygame.display.set_caption("Dinossauro")
 
 #variáveis
 distancia = 0
+no_chao = True
+velocidade_y = 0
+gravidade = 1
+piso = tela_alt - 200
 
 #coloca texto
 fonte = pygame.font.SysFont("Arial", 15)
@@ -35,6 +39,18 @@ while jogando:
         if evento.type == pygame.QUIT:
             jogando = False
         
+        if evento.type == pygame.KEYDOWN:
+            if +(evento.key == pygame.K_SPACE and no_chao) or (evento.key == pygame.K_UP and no_chao):
+                no_chao = False
+                velocidade_y = -20
+
+    if not no_chao:
+        dino_rect.y += velocidade_y
+        velocidade_y += gravidade
+        if dino_rect.y >= piso:
+            dino_rect.y = piso
+            no_chao = True
+
 
     fundo = (135, 206, 235)
     tela.fill(fundo)
