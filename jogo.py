@@ -11,20 +11,28 @@ pygame.display.set_caption("Dinossauro")
 clock = pygame.time.Clock()
 
 #texto
-fonte = pygame.font.SysFont(None, 15)
+fonte = pygame.font.SysFont(None, 25)
 
 def play():
     #variáveis
     distancia = 0
-    no_chao = True
+    floor = True
     velocidade_y = 0
     gravidade = 1
     piso = tela_alt - 200
     velocidade_cacto = 5
+    contador = 0
+    down = False
 
     #dinossauro
-    dinossauro = pygame.image.load("imagens/dino.png.png")
-    dinossauro = pygame.transform.scale(dinossauro, (50, 50))
+    dinossauro_right = pygame.image.load("imagens/dino_pe_direito.png")
+    dinossauro_left = pygame.image.load("imagens/dino_pe_esquerdo.png")
+    dinossauro_down_right = pygame.image.load("imagens/dino_abaixado_direito.png")
+    dinossauro_down_left = pygame.image.load("imagens/dino_abaixado_esquerdo.png")
+    dinossauro_right = pygame.transform.scale(dinossauro_right, (50, 60))
+    dinossauro_left = pygame.transform.scale(dinossauro_left, (50, 60))
+    dinossauro_down_right = pygame.transform.scale(dinossauro_down_right, (60, 40))
+    dinossauro_down_left = pygame.transform.scale(dinossauro_down_left, (60, 40))
     dino_x = 100
     dino_y = tela_alt - 200
 
@@ -41,8 +49,9 @@ def play():
     cacto_y = tela_alt - 200
 
     #criar máscaras
-    mascara_dino = pygame.mask.from_surface(dinossauro)
-    mascara_cacto = pygame.mask.from_surface(cacto)
+    mask_dino_right = pygame.mask.from_surface(dinossauro_right)
+    mask_dino_left = pygame.mask.from_surface(dinossauro_left)
+    mask_cacto = pygame.mask.from_surface(cacto)
 
     #roda o jogo
     jogando = True
@@ -57,9 +66,33 @@ def play():
                 jogando = False
         
             if evento.type == pygame.KEYDOWN:
-                if (evento.key == pygame.K_SPACE and no_chao) or (evento.key == pygame.K_UP and no_chao):
-                    no_chao = False
+                if (evento.key == pygame.K_SPACE and floor) or (evento.key == pygame.K_UP and floor):
+                    floor = False
                     velocidade_y = -15
+
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN and floor:
+                    down = True
+                    dino_y = tela_alt - 180 
+            
+            if evento.type == pygame.KEYUP:
+                if evento.key == pygame.K_DOWN:
+                    down = False
+                    dino_y = tela_alt - 200 
+
+        contador += 1
+
+        if down:
+            if contador % 20 < 10:
+                dinossauro = dinossauro_down_right
+            else:
+                dinossauro = dinossauro_down_left
+
+        else:
+            if contador % 20 < 10:
+                dinossauro = dinossauro_right
+            else:
+                dinossauro = dinossauro_left
 
         distancia += velocidade_cacto * tempo
     
@@ -67,7 +100,7 @@ def play():
         if cacto_x < 0:
             cacto_x = 800 + random.randint(100, 300)
 
-        if mascara_dino.overlap(mascara_cacto,(cacto_x - dino_x, cacto_y - dino_y)):
+        if mask_dino_right.overlap(mask_cacto,(cacto_x - dino_x, cacto_y - dino_y)) or mask_dino_left.overlap(mask_cacto,(cacto_x - dino_x, cacto_y - dino_y)):
             print("bateu no cacto!")
             jogando = False
     
@@ -79,12 +112,12 @@ def play():
         if chao_rect2.right <= 0:
             chao_rect2.x = chao_rect1.right
 
-        if not no_chao:
+        if not floor:
             dino_y += velocidade_y
             velocidade_y += gravidade
             if dino_y >= piso:
                 dino_y = piso
-                no_chao = True
+                floor = True
 
         texto = fonte.render(f"DISTÂNCIA: {distancia:.0f}", True, (0, 0, 0))
         texto_rect = texto.get_rect(topright=(680, 10))
